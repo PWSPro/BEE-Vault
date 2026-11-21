@@ -1,0 +1,2388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#121620">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>BEE Vault — Personal Finance & Savings</title>
+    <script>
+        // Dynamic PWA Manifest for Full-Screen Home Screen App on GitHub Pages
+        (function() {
+            const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="110" fill="#121620"/><polygon points="256,64 422,160 422,352 256,448 90,352 90,160" fill="none" stroke="#eab308" stroke-width="32"/><circle cx="256" cy="256" r="64" fill="#eab308"/></svg>`;
+            const manifest = {
+                name: "BEE Vault Pro",
+                short_name: "BEE Vault",
+                start_url: "./",
+                display: "standalone",
+                background_color: "#090b10",
+                theme_color: "#121620",
+                icons: [{
+                    src: "data:image/svg+xml;utf8," + encodeURIComponent(iconSvg),
+                    sizes: "512x512",
+                    type: "image/svg+xml"
+                }]
+            };
+            const link = document.createElement('link');
+            link.rel = 'manifest';
+            link.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest));
+            document.head.appendChild(link);
+        })();
+    </script>
+    <style>
+        :root {
+            --primary: #eab308;
+            --secondary: #10b981;
+            --income: #10b981;
+            --expense: #ef4444;
+            --bg-app: #090b10;
+            --bg-card: #121620;
+            --bg-elevated: #1a202e;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #232b3e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-app);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding-bottom: 94px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        body.privacy-blur .sensitive {
+            filter: blur(7px);
+            user-select: none;
+            transition: filter 0.2s;
+        }
+
+        /* Header */
+        header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 11px 14px;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .header-wrap {
+            max-width: 560px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: color-mix(in srgb, var(--primary) 16%, transparent);
+            border: 1px solid color-mix(in srgb, var(--primary) 45%, transparent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .brand-title {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .brand-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 6px;
+            background: var(--primary);
+            color: #000;
+            font-weight: 900;
+        }
+
+        .brand-sub {
+            font-size: 11px;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .hdr-btn {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            height: 34px;
+            min-width: 34px;
+            padding: 0 8px;
+            border-radius: 9px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hdr-btn:active {
+            transform: scale(0.94);
+        }
+
+        /* Layout */
+        .container {
+            max-width: 560px;
+            margin: 0 auto;
+            padding: 12px;
+        }
+
+        .tab-view {
+            display: none;
+            animation: slideUp 0.2s ease;
+        }
+
+        .tab-view.active {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+
+        .card-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 8px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pill-tag {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 9px;
+            border-radius: 8px;
+            background: color-mix(in srgb, var(--primary) 16%, transparent);
+            color: var(--primary);
+            border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        /* Hero Net Balance Card */
+        .hero-card {
+            background: linear-gradient(145deg, color-mix(in srgb, var(--primary) 16%, var(--bg-card)) 0%, var(--bg-card) 75%);
+            border: 1px solid color-mix(in srgb, var(--primary) 40%, var(--border));
+        }
+
+        .net-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .net-value {
+            font-size: 32px;
+            font-weight: 900;
+            margin: 6px 0 14px;
+            letter-spacing: -0.5px;
+        }
+
+        .stat-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .stat-pill {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stat-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 900;
+            flex-shrink: 0;
+        }
+
+        .hero-foot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        /* Inputs & Buttons */
+        input, select {
+            width: 100%;
+            padding: 11px 12px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 13px;
+            outline: none;
+            margin-bottom: 9px;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 11px;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #000000;
+        }
+
+        .btn-inc {
+            background: var(--income);
+            color: #000000;
+        }
+
+        .btn-exp {
+            background: var(--expense);
+            color: #ffffff;
+        }
+
+        .btn-ghost {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+        }
+
+        /* Horizontal Wallets */
+        .wallet-strip {
+            display: flex;
+            gap: 9px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+        }
+
+        .wallet-strip::-webkit-scrollbar {
+            display: none;
+        }
+
+        .wallet-box {
+            min-width: 134px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 11px;
+            cursor: pointer;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .wallet-box.active {
+            border-color: var(--primary);
+            background: color-mix(in srgb, var(--primary) 12%, var(--bg-elevated));
+        }
+
+        /* Shortcuts */
+        .shortcut-strip {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .shortcut-strip::-webkit-scrollbar {
+            display: none;
+        }
+
+        .shortcut-chip {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Filter Chips */
+        .filter-row {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            margin-bottom: 10px;
+            scrollbar-width: none;
+        }
+
+        .filter-row::-webkit-scrollbar {
+            display: none;
+        }
+
+        .f-chip {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .f-chip.active {
+            background: var(--primary);
+            color: #000000;
+            border-color: var(--primary);
+        }
+
+        /* Transaction Row */
+        .tx-row {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 11px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tx-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 5px;
+            background: var(--bg-card);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        /* Progress Bar */
+        .prog-track {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-app);
+            border-radius: 99px;
+            overflow: hidden;
+            margin: 7px 0;
+        }
+
+        .prog-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 99px;
+            transition: width 0.3s;
+        }
+
+        /* Heatmap */
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+
+        .heat-cell {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        /* Color Picker Studio */
+        .token-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .token-btn {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 9px;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            cursor: pointer;
+            text-align: left;
+            color: var(--text-main);
+        }
+
+        .token-btn.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+
+        .token-swatch {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.2);
+            flex-shrink: 0;
+        }
+
+        .wheel-wrap {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0 14px;
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            right: 16px;
+            bottom: 74px;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #000000;
+            border: none;
+            font-size: 26px;
+            font-weight: 800;
+            box-shadow: 0 8px 22px color-mix(in srgb, var(--primary) 45%, transparent);
+            cursor: pointer;
+            z-index: 95;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fab:active {
+            transform: scale(0.92);
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 7px 0;
+            z-index: 90;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        /* Modals */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.82);
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        .modal-backdrop.open {
+            display: flex;
+        }
+
+        .modal-sheet {
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            border-radius: 20px 20px 0 0;
+            width: 100%;
+            max-width: 560px;
+            padding: 18px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .seg-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+            background: var(--bg-elevated);
+            padding: 4px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+
+        .seg-btn {
+            padding: 8px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .seg-btn.active {
+            background: var(--primary);
+            color: #000000;
+        }
+
+        /* Calc Grid */
+        .calc-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .c-key {
+            height: 48px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg-elevated);
+            color: var(--text-main);
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Header -->
+    <header>
+        <div class="header-wrap">
+            <div class="brand-box">
+                <div class="brand-logo">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                        <polygon points="12,2 21,7 21,17 12,22 3,17 3,7" stroke="var(--primary)" stroke-width="2.2" fill="none"/>
+                        <circle cx="12" cy="12" r="3.5" fill="var(--primary)"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="brand-title">BEE Vault <span class="brand-badge">ULTIMATE</span></div>
+                    <div class="brand-sub" data-i18n="appSub">Personal Finance Vault</div>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button class="hdr-btn" onclick="toggleLang()" id="langBtn">MM</button>
+                <button class="hdr-btn" onclick="togglePrivacy()" id="eyeBtn" title="Privacy Blur">👁️</button>
+                <button class="hdr-btn" onclick="openCalcModal()" title="Calculator">🧮</button>
+                <button class="hdr-btn" onclick="openLockModal()" title="Lock Vault">🔒</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- ==================== TAB 1: HOME ==================== -->
+        <section id="view-home" class="tab-view active">
+            <!-- Total Net Balance Card -->
+            <div class="card hero-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="net-label" data-i18n="totalNet">TOTAL NET BALANCE</span>
+                    <span class="pill-tag" id="currencyBadge" onclick="switchTab('tools')">MMK (Ks)</span>
+                </div>
+                <div class="net-value sensitive" id="netBalanceDisplay">0 Ks</div>
+
+                <div class="stat-split">
+                    <div class="stat-pill">
+                        <div class="stat-icon" style="background: color-mix(in srgb, var(--income) 18%, transparent); color: var(--income);">↓</div>
+                        <div>
+                            <div style="font-size: 11px; color: var(--text-muted);" data-i18n="totalInc">Total Income</div>
+                            <div class="sensitive" style="font-size: 14px; font-weight: 800; color: var(--income);" id="totalIncDisplay">+0 Ks</div>
+                        </div>
+                    </div>
+                    <div class="stat-pill">
+                        <div class="stat-icon" style="background: color-mix(in srgb, var(--expense) 18%, transparent); color: var(--expense);">↑</div>
+                        <div>
+                            <div style="font-size: 11px; color: var(--text-muted);" data-i18n="totalExp">Total Expense</div>
+                            <div class="sensitive" style="font-size: 14px; font-weight: 800; color: var(--expense);" id="totalExpDisplay">-0 Ks</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hero-foot">
+                    <span><span data-i18n="safeDaily">Safe Daily:</span> <strong class="sensitive" style="color: var(--text-main);" id="safeDailyDisplay">0 Ks/day</strong></span>
+                    <span><span data-i18n="savingsRate">Savings Rate:</span> <strong style="color: var(--income);" id="savingsRateDisplay">0%</strong></span>
+                </div>
+                <div class="hero-foot" style="border-top: none; padding-top: 6px;">
+                    <span data-i18n="healthScoreLabel">Cashflow Health Score:</span>
+                    <strong style="color: var(--primary);" id="healthScoreDisplay">50 / 100</strong>
+                </div>
+            </div>
+
+            <!-- Quick Add Card -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-title">⚡ <span data-i18n="quickAddTitle">Quick Add Income or Expense</span></span>
+                    <button class="pill-tag" onclick="openTxModal('expense')" data-i18n="fullForm">Full Form</button>
+                </div>
+                <div class="grid-2">
+                    <input type="text" id="quickDesc" data-i18n-ph="descPh" placeholder="Description (e.g. Salary, Dinner)">
+                    <input type="text" id="quickAmt" data-i18n-ph="amtPh" placeholder="Amount (e.g. 5000+2500)" oninput="previewQuickMath()">
+                </div>
+                <div id="quickMathPreview" style="font-size: 11px; color: var(--primary); margin: -4px 0 8px; display: none;"></div>
+                <div class="grid-2">
+                    <button class="btn btn-inc" onclick="quickSubmit('income')">+ <span data-i18n="addIncome">Add Income</span></button>
+                    <button class="btn btn-exp" onclick="quickSubmit('expense')">- <span data-i18n="addExpense">Add Expense</span></button>
+                </div>
+            </div>
+
+            <!-- Accounts & Wallets -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-title">💳 <span data-i18n="walletsTitle">Accounts & Wallets</span></span>
+                    <div style="display: flex; gap: 6px;">
+                        <button class="pill-tag" onclick="openTxModal('transfer')">⇄ <span data-i18n="typeTrf">Transfer</span></button>
+                        <button class="pill-tag" onclick="createNewWallet()">+ <span data-i18n="newWallet">New Wallet</span></button>
+                    </div>
+                </div>
+                <div class="wallet-strip" id="walletStrip"></div>
+            </div>
+
+            <!-- 1-Tap Custom Shortcuts -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-title">⚡ <span data-i18n="shortcutsTitle">1-Tap Custom Shortcuts</span></span>
+                    <button class="pill-tag" onclick="createShortcut()">+ <span data-i18n="createShortcut">Create Shortcut</span></button>
+                </div>
+                <div class="shortcut-strip" id="shortcutStrip"></div>
+            </div>
+
+            <!-- Filter & Transaction List -->
+            <div class="card">
+                <div class="filter-row" id="timeFilterRow">
+                    <button class="f-chip active" onclick="setTimeFilter('all', this)" data-i18n="fAll">All Time</button>
+                    <button class="f-chip" onclick="setTimeFilter('today', this)" data-i18n="fToday">Today</button>
+                    <button class="f-chip" onclick="setTimeFilter('week', this)" data-i18n="fWeek">This Week</button>
+                    <button class="f-chip" onclick="setTimeFilter('month', this)" data-i18n="fMonth">This Month</button>
+                    <button class="f-chip" onclick="setTimeFilter('star', this)">⭐ <span data-i18n="fStar">Starred</span></button>
+                </div>
+
+                <div class="grid-2">
+                    <input type="text" id="txSearch" data-i18n-ph="searchPh" placeholder="Search title, #tag, note..." oninput="renderTransactions()">
+                    <select id="txSort" onchange="renderTransactions()">
+                        <option value="newest" data-i18n="sortNew">Newest First</option>
+                        <option value="oldest" data-i18n="sortOld">Oldest First</option>
+                        <option value="highest" data-i18n="sortHigh">Highest Amount</option>
+                        <option value="lowest" data-i18n="sortLow">Lowest Amount</option>
+                    </select>
+                </div>
+
+                <div id="txList"></div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 2: ANALYTICS ==================== -->
+        <section id="view-analytics" class="tab-view">
+            <!-- Income vs Expense Canvas -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-title">📊 <span data-i18n="incVsExp">Income vs Expense Overview</span></span>
+                    <span class="pill-tag">Live Canvas</span>
+                </div>
+                <canvas id="barCanvas" width="480" height="200" style="width: 100%; height: 185px;"></canvas>
+            </div>
+
+            <!-- Expense Category Breakdown -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-title">🍩 <span data-i18n="catBreakdown">Expense Category Breakdown</span></span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                    <canvas id="donutCanvas" width="180" height="180" style="width: 145px; height: 145px; margin: 0 auto;"></canvas>
+                    <div id="donutLegend" style="flex: 1; min-width: 160px; font-size: 12px;"></div>
+                </div>
+            </div>
+
+            <!-- Net Worth & Cashflow Curve -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-title">📈 <span data-i18n="cashflowCurve">Net Worth & Cashflow Curve</span></span>
+                    <span class="pill-tag" data-i18n="cumulative">Cumulative</span>
+                </div>
+                <canvas id="lineCanvas" width="480" height="180" style="width: 100%; height: 165px;"></canvas>
+            </div>
+
+            <!-- 28-Day Activity Heatmap -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-title">🟩 <span data-i18n="heatmapTitle">Monthly Activity Heatmap</span></span>
+                    <span class="pill-tag">28-Day Grid</span>
+                </div>
+                <div class="heatmap-grid" id="heatmapGrid"></div>
+            </div>
+
+            <!-- Smart Spend Metrics -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-title">🧠 <span data-i18n="smartMetrics">Smart Cashflow Insights</span></span>
+                </div>
+                <div id="smartMetricsBox" style="font-size: 13px; display: flex; flex-direction: column; gap: 8px;"></div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 3: BUDGETS & GOALS ==================== -->
+        <section id="view-budgets" class="tab-view">
+            <!-- 50/30/20 Rule Analyzer -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-title">⚖️ <span data-i18n="rule503020">50 / 30 / 20 Budget Rule Analyzer</span></span>
+                    <span class="pill-tag" data-i18n="autoCalc">Auto-Calculated</span>
+                </div>
+                <div style="font-size: 13px; line-height: 1.8; color: var(--text-muted);" id="rule503020Box"></div>
+            </div>
+
+            <!-- Monthly Category Budgets -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-title">🛡️ <span data-i18n="catBudgets">Monthly Category Budgets</span></span>
+                    <button class="pill-tag" onclick="addCategoryBudget()">+ <span data-i18n="addBudget">Add Budget Limit</span></button>
+                </div>
+                <div id="categoryBudgetsList"></div>
+            </div>
+
+            <!-- Savings Goals & Wishlists -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-title">🎯 <span data-i18n="goalsTitle">Savings Goals & Wishlists</span></span>
+                    <button class="pill-tag" onclick="addSavingsGoal()">+ <span data-i18n="newGoal">New Goal</span></button>
+                </div>
+                <div id="goalsList"></div>
+            </div>
+
+            <!-- Recurring Bills & Subscriptions -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-title">📅 <span data-i18n="billsTitle">Recurring Bills & Subscriptions</span></span>
+                    <button class="pill-tag" onclick="addRecurringBill()">+ <span data-i18n="addBill">Add Bill</span></button>
+                </div>
+                <div id="billsList"></div>
+            </div>
+
+            <!-- Debt, Loan & IOU Tracker -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-title">🤝 <span data-i18n="iouTitle">Debt, Loan & IOU Tracker</span></span>
+                    <button class="pill-tag" onclick="addIouRecord()">+ <span data-i18n="addRecord">Add Record</span></button>
+                </div>
+                <div id="iouList"></div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 4: COLORS STUDIO ==================== -->
+        <section id="view-colors" class="tab-view">
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-title">🎨 <span data-i18n="colorStudio">Live Custom Color Picker Studio</span></span>
+                </div>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;" data-i18n="colorDesc">
+                    Select any UI color token below, then drag on the 2D HSV Color Wheel, adjust RGB/Brightness sliders, or tap a Designer Preset.
+                </p>
+
+                <div class="token-grid" id="tokenGrid"></div>
+
+                <div class="wheel-wrap">
+                    <canvas id="colorWheelCanvas" width="220" height="220" style="cursor: crosshair; touch-action: none;"></canvas>
+                </div>
+
+                <label style="font-size: 12px; color: var(--text-muted); display: flex; justify-content: space-between;">
+                    <span data-i18n="brightness">Brightness / Value</span>
+                    <span id="valPctLabel">95%</span>
+                </label>
+                <input type="range" id="valSlider" min="10" max="100" value="95" oninput="onBrightnessChange()" style="padding: 0; accent-color: var(--primary);">
+
+                <div class="grid-2" style="align-items: center;">
+                    <input type="text" id="hexColorInput" value="#eab308" oninput="onHexInput()">
+                    <button class="btn btn-primary" style="margin-bottom: 9px;" onclick="applyManualHex()" data-i18n="applyColor">Apply</button>
+                </div>
+
+                <div style="font-size: 12px; display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 14px; color: #ef4444; font-weight: 800;">R</span>
+                        <input type="range" id="rSlider" min="0" max="255" oninput="onRgbSlider()" style="margin: 0; padding: 0; accent-color: #ef4444;">
+                        <span id="rVal" style="width: 28px; text-align: right;">234</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 14px; color: #10b981; font-weight: 800;">G</span>
+                        <input type="range" id="gSlider" min="0" max="255" oninput="onRgbSlider()" style="margin: 0; padding: 0; accent-color: #10b981;">
+                        <span id="gVal" style="width: 28px; text-align: right;">179</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 14px; color: #3b82f6; font-weight: 800;">B</span>
+                        <input type="range" id="bSlider" min="0" max="255" oninput="onRgbSlider()" style="margin: 0; padding: 0; accent-color: #3b82f6;">
+                        <span id="bVal" style="width: 28px; text-align: right;">8</span>
+                    </div>
+                </div>
+
+                <div class="card-title" style="margin-bottom: 8px; font-size: 13px;">✨ <span data-i18n="presetsTitle">1-Tap Designer Theme Presets</span></div>
+                <div class="grid-3">
+                    <button class="btn btn-ghost" style="font-size: 11px;" onclick="applyPreset('beeGold')">🐝 BEE Gold</button>
+                    <button class="btn btn-ghost" style="font-size: 11px;" onclick="applyPreset('neonMint')">🌿 Neon Mint</button>
+                    <button class="btn btn-ghost" style="font-size: 11px;" onclick="applyPreset('cyberBlue')">💎 Cyber Blue</button>
+                    <button class="btn btn-ghost" style="font-size: 11px;" onclick="applyPreset('royalPurple')">🔮 Amethyst</button>
+                    <button class="btn btn-ghost" style="font-size: 11px;" onclick="applyPreset('roseDark')">🌸 Rose Velvet</button>
+                    <button class="btn btn-ghost" style="font-size: 11px;" onclick="applyPreset('cleanLight')">☀️ Clean Light</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 5: TOOLS ==================== -->
+        <section id="view-tools" class="tab-view">
+            <!-- Multi-Currency Converter -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-title">💱 <span data-i18n="fxTitle">Multi-Currency Converter</span></span>
+                    <button class="pill-tag" onclick="editFxRate()">✏️ Edit Rate</button>
+                </div>
+                <div class="grid-3">
+                    <input type="number" id="fxAmount" value="100" oninput="calcFx()">
+                    <select id="fxFrom" onchange="calcFx()">
+                        <option value="USD">USD ($)</option>
+                        <option value="MMK">MMK (Ks)</option>
+                        <option value="SGD">SGD (S$)</option>
+                        <option value="THB">THB (฿)</option>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="JPY">JPY (¥)</option>
+                        <option value="CNY">CNY (¥)</option>
+                        <option value="KRW">KRW (₩)</option>
+                        <option value="MYR">MYR (RM)</option>
+                        <option value="GBP">GBP (£)</option>
+                    </select>
+                    <select id="fxTo" onchange="calcFx()">
+                        <option value="MMK" selected>MMK (Ks)</option>
+                        <option value="USD">USD ($)</option>
+                        <option value="SGD">SGD (S$)</option>
+                        <option value="THB">THB (฿)</option>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="JPY">JPY (¥)</option>
+                        <option value="CNY">CNY (¥)</option>
+                        <option value="KRW">KRW (₩)</option>
+                        <option value="MYR">MYR (RM)</option>
+                        <option value="GBP">GBP (£)</option>
+                    </select>
+                </div>
+                <div style="font-size: 16px; font-weight: 800; color: var(--primary);" id="fxResult">100 USD = 450,000 MMK</div>
+            </div>
+
+            <!-- Split Bill & Tip Calculator -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-title">🧾 <span data-i18n="splitTitle">Split Bill & Tip Calculator</span></span>
+                    <span class="pill-tag">Group Split</span>
+                </div>
+                <div class="grid-3">
+                    <input type="number" id="splitTotal" placeholder="Bill (Ks)" oninput="calcSplit()">
+                    <input type="number" id="splitPeople" value="2" min="1" placeholder="People" oninput="calcSplit()">
+                    <input type="number" id="splitTip" value="0" min="0" placeholder="Tip %" oninput="calcSplit()">
+                </div>
+                <div style="font-size: 14px; font-weight: 800; color: var(--primary);" id="splitResult">Each Person Pays: 0 Ks</div>
+            </div>
+
+            <!-- Compound Savings Projector -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-title">📈 <span data-i18n="compoundTitle">Compound Savings Projector</span></span>
+                </div>
+                <div class="grid-3">
+                    <input type="number" id="compMonthly" placeholder="Monthly (Ks)" oninput="calcCompound()">
+                    <input type="number" id="compYears" value="5" placeholder="Years" oninput="calcCompound()">
+                    <input type="number" id="compRate" value="8" placeholder="Annual %" oninput="calcCompound()">
+                </div>
+                <div style="font-size: 13px; font-weight: 700; color: var(--primary);" id="compoundResult">Enter monthly savings to project future growth</div>
+            </div>
+
+            <!-- Emergency Fund Estimator -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-title">🛟 <span data-i18n="emergTitle">Emergency Fund Runway</span></span>
+                </div>
+                <div style="font-size: 13px; color: var(--text-muted);" id="emergResult"></div>
+            </div>
+
+            <!-- Optional Cloud Sync (JSONBin.io) -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-title">☁️ <span data-i18n="cloudSyncTitle">Cloud Sync (Optional)</span></span>
+                    <span class="pill-tag" id="cloudSyncBadge">Local Only</span>
+                </div>
+                <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">
+                    ဖုန်းတစ်လုံးနှင့်တစ်လုံး စာရင်းရွှေ့ပြောင်းလိုပါက JSONBin.io Bin ID နှင့် Master Key ထည့်ပြီး Sync လုပ်နိုင်ပါသည်။
+                </p>
+                <div class="grid-2">
+                    <input type="text" id="cloudBinInput" placeholder="JSONBin Bin ID">
+                    <input type="password" id="cloudKeyInput" placeholder="JSONBin Master Key">
+                </div>
+                <div class="grid-2">
+                    <button class="btn btn-ghost" onclick="cloudPush()">⬆️ Upload Cloud</button>
+                    <button class="btn btn-ghost" onclick="cloudPull()">⬇️ Restore Cloud</button>
+                </div>
+            </div>
+
+            <!-- Backup, Export & Reset -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-title">💾 <span data-i18n="backupTitle">Backup, Export & Data Reset</span></span>
+                </div>
+                <div class="grid-2" style="margin-bottom: 8px;">
+                    <button class="btn btn-primary" onclick="exportCSV()">📄 Export CSV</button>
+                    <button class="btn btn-ghost" onclick="exportJSON()">📦 Export JSON</button>
+                </div>
+                <div class="grid-2" style="margin-bottom: 8px;">
+                    <button class="btn btn-ghost" onclick="document.getElementById('jsonImport').click()">📥 Import JSON</button>
+                    <button class="btn btn-ghost" onclick="loadSampleData()">✨ Load Sample Data</button>
+                    <input type="file" id="jsonImport" accept=".json" style="display: none;" onchange="importJSON(event)">
+                </div>
+                <button class="btn btn-exp" onclick="clearAllZero()">🗑️ Clear All to 0</button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Floating + Button -->
+    <button class="fab" onclick="openTxModal('expense')">+</button>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" id="nav-home" onclick="switchTab('home')">
+            <span style="font-size: 18px;">🏠</span>
+            <span data-i18n="navHome">Home</span>
+        </button>
+        <button class="nav-item" id="nav-analytics" onclick="switchTab('analytics')">
+            <span style="font-size: 18px;">📊</span>
+            <span data-i18n="navAnalytics">Analytics</span>
+        </button>
+        <button class="nav-item" id="nav-budgets" onclick="switchTab('budgets')">
+            <span style="font-size: 18px;">🎯</span>
+            <span data-i18n="navBudgets">Budgets</span>
+        </button>
+        <button class="nav-item" id="nav-colors" onclick="switchTab('colors')">
+            <span style="font-size: 18px;">🎨</span>
+            <span data-i18n="navColors">Colors</span>
+        </button>
+        <button class="nav-item" id="nav-tools" onclick="switchTab('tools')">
+            <span style="font-size: 18px;">🧰</span>
+            <span data-i18n="navTools">Tools</span>
+        </button>
+    </nav>
+
+    <!-- ==================== MODAL: NEW / EDIT TRANSACTION ==================== -->
+    <div class="modal-backdrop" id="txModal" onclick="if(event.target===this) closeModal('txModal')">
+        <div class="modal-sheet">
+            <div class="card-head">
+                <span class="card-title" id="txModalHeading">➕ <span data-i18n="newTxTitle">New Transaction</span></span>
+                <button class="hdr-btn" onclick="closeModal('txModal')">✖</button>
+            </div>
+
+            <div class="seg-tabs" id="modalSegTabs">
+                <button class="seg-btn active" id="segExp" onclick="setModalType('expense')" data-i18n="typeExp">Expense</button>
+                <button class="seg-btn" id="segInc" onclick="setModalType('income')" data-i18n="typeInc">Income</button>
+                <button class="seg-btn" id="segTrf" onclick="setModalType('transfer')" data-i18n="typeTrf">Transfer</button>
+            </div>
+
+            <input type="text" id="mAmt" placeholder="Enter Amount (or math e.g. 5000+2500)">
+            <input type="text" id="mTitle" placeholder="Title (e.g. Salary, Lunch, Server Bill)">
+
+            <div class="grid-2" id="mCatWalletRow">
+                <select id="mCategory">
+                    <option value="Food & Dining">🍜 Food & Dining</option>
+                    <option value="Salary & Allowance">💵 Salary & Allowance</option>
+                    <option value="Transport">🚲 Transport</option>
+                    <option value="Bills & Internet">📱 Bills & Internet</option>
+                    <option value="Shopping">🛍️ Shopping</option>
+                    <option value="Savings & Investment">💰 Savings & Investment</option>
+                    <option value="Entertainment">🎮 Entertainment</option>
+                    <option value="Other">📦 Other</option>
+                </select>
+                <select id="mWallet"></select>
+            </div>
+
+            <div id="mTransferRow" style="display: none;">
+                <div class="grid-2">
+                    <select id="mFromWallet"></select>
+                    <select id="mToWallet"></select>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <input type="date" id="mDate">
+                <input type="text" id="mTags" placeholder="#tags (e.g. #work #food)">
+            </div>
+
+            <input type="text" id="mNote" placeholder="Optional merchant, receipt ref, or note...">
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 12px;">
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="checkbox" id="mStar" style="width: auto; margin: 0;"> ⭐ Star / Pin Record
+                </label>
+            </div>
+
+            <button class="btn btn-primary" onclick="saveFullTransaction()">✅ <span data-i18n="saveRecord">Save Record</span></button>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: QUICK CALCULATOR ==================== -->
+    <div class="modal-backdrop" id="calcModal" onclick="if(event.target===this) closeModal('calcModal')">
+        <div class="modal-sheet">
+            <div class="card-head">
+                <span class="card-title">🧮 BEE Quick Calculator</span>
+                <button class="hdr-btn" onclick="closeModal('calcModal')">✖</button>
+            </div>
+            <div style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: right; margin-bottom: 12px;">
+                <div style="font-size: 12px; color: var(--text-muted); min-height: 18px;" id="popCalcExpr">0</div>
+                <div style="font-size: 28px; font-weight: 900; color: var(--primary);" id="popCalcDisp">0</div>
+            </div>
+            <div class="calc-grid">
+                <button class="c-key" style="color: var(--expense);" onclick="popCalcKey('C')">AC</button>
+                <button class="c-key" onclick="popCalcKey('DEL')">⌫</button>
+                <button class="c-key" onclick="popCalcKey('/')">÷</button>
+                <button class="c-key" onclick="popCalcKey('*')">×</button>
+
+                <button class="c-key" onclick="popCalcKey('7')">7</button>
+                <button class="c-key" onclick="popCalcKey('8')">8</button>
+                <button class="c-key" onclick="popCalcKey('9')">9</button>
+                <button class="c-key" onclick="popCalcKey('-')">−</button>
+
+                <button class="c-key" onclick="popCalcKey('4')">4</button>
+                <button class="c-key" onclick="popCalcKey('5')">5</button>
+                <button class="c-key" onclick="popCalcKey('6')">6</button>
+                <button class="c-key" onclick="popCalcKey('+')">+</button>
+
+                <button class="c-key" onclick="popCalcKey('1')">1</button>
+                <button class="c-key" onclick="popCalcKey('2')">2</button>
+                <button class="c-key" onclick="popCalcKey('3')">3</button>
+                <button class="c-key" style="background: var(--primary); color: #000;" onclick="popCalcKey('=')">=</button>
+
+                <button class="c-key" onclick="popCalcKey('0')">0</button>
+                <button class="c-key" onclick="popCalcKey('00')">00</button>
+                <button class="c-key" onclick="popCalcKey('000')">000</button>
+                <button class="c-key" style="font-size: 12px; color: var(--secondary);" onclick="useCalcInQuick()">Use ➔</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: VAULT PIN LOCK ==================== -->
+    <div class="modal-backdrop" id="lockModal">
+        <div class="modal-sheet" style="text-align: center;">
+            <div style="font-size: 32px; margin-bottom: 6px;">🔐</div>
+            <h3 style="margin-bottom: 6px;">BEE Vault Security</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;" id="lockPromptText">
+                Enter your 4-digit PIN (Default: 1234) to unlock financial records.
+            </p>
+            <input type="password" id="vaultPinInput" maxlength="4" inputmode="numeric" placeholder="••••" style="text-align: center; font-size: 22px; letter-spacing: 8px;" oninput="if(this.value.length===4) verifyVaultPin()">
+            <div id="vaultPinError" style="color: var(--expense); font-size: 12px; margin-bottom: 10px; display: none;">Incorrect PIN!</div>
+            <button class="btn btn-primary" onclick="verifyVaultPin()" style="margin-bottom: 8px;">Unlock Vault</button>
+            <div class="grid-2">
+                <button class="btn btn-ghost" onclick="toggleStartupLock()" id="startupLockBtn" style="font-size: 12px;">Startup Lock: OFF</button>
+                <button class="btn btn-ghost" onclick="changeVaultPin()" style="font-size: 12px;">Change PIN</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- SAFE STORAGE ---
+        const STORAGE_KEY = 'beeVault_ultimate_v2';
+        function loadStore(k, def) {
+            try {
+                const v = localStorage.getItem(k);
+                return v ? JSON.parse(v) : def;
+            } catch (e) { return def; }
+        }
+        function saveStore(k, v) {
+            try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {}
+        }
+        function esc(s) {
+            return String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+        }
+
+        // --- APP STATE ---
+        let state = loadStore(STORAGE_KEY, {
+            lang: 'en',
+            pin: '1234',
+            lockOnStart: false,
+            wallets: ['Cash Wallet', 'KBZPay', 'WavePay'],
+            transactions: [],
+            shortcuts: [
+                { id: 1, title: 'Coffee / Tea', amount: 2500, type: 'expense', category: 'Food & Dining', wallet: 'Cash Wallet' },
+                { id: 2, title: 'Daily Allowance', amount: 10000, type: 'income', category: 'Salary & Allowance', wallet: 'Cash Wallet' }
+            ],
+            budgets: [],
+            goals: [],
+            bills: [],
+            ious: [],
+            ratesToMMK: { MMK: 1, USD: 4500, SGD: 3350, THB: 132, EUR: 4850, JPY: 30, CNY: 620, KRW: 3.3, MYR: 1020, GBP: 5700 },
+            cloud: { binId: '', apiKey: '' },
+            theme: {
+                primary: '#eab308',
+                secondary: '#10b981',
+                income: '#10b981',
+                expense: '#ef4444',
+                bgApp: '#090b10',
+                bgCard: '#121620'
+            }
+        });
+
+        let selectedWalletFilter = 'ALL';
+        let currentTimeFilter = 'all';
+        let modalTxType = 'expense';
+        let editingTxId = null;
+        let activeColorToken = 'primary';
+
+        // --- BILINGUAL DICTIONARY (ENG / MM) ---
+        const i18n = {
+            en: {
+                appSub: "Personal Finance Vault", totalNet: "TOTAL NET BALANCE",
+                totalInc: "Total Income", totalExp: "Total Expense",
+                safeDaily: "Safe Daily:", savingsRate: "Savings Rate:", healthScoreLabel: "Cashflow Health Score:",
+                quickAddTitle: "Quick Add Income or Expense", fullForm: "Full Form",
+                addIncome: "Add Income", addExpense: "Add Expense",
+                walletsTitle: "Accounts & Wallets", newWallet: "New Wallet",
+                shortcutsTitle: "1-Tap Custom Shortcuts", createShortcut: "Create Shortcut",
+                fAll: "All Time", fToday: "Today", fWeek: "This Week", fMonth: "This Month", fStar: "Starred",
+                sortNew: "Newest First", sortOld: "Oldest First", sortHigh: "Highest Amount", sortLow: "Lowest Amount",
+                incVsExp: "Income vs Expense Overview", catBreakdown: "Expense Category Breakdown",
+                cashflowCurve: "Net Worth & Cashflow Curve", cumulative: "Cumulative",
+                heatmapTitle: "Monthly Activity Heatmap", smartMetrics: "Smart Cashflow Insights",
+                rule503020: "50 / 30 / 20 Budget Rule Analyzer", autoCalc: "Auto-Calculated",
+                catBudgets: "Monthly Category Budgets", addBudget: "Add Budget Limit",
+                goalsTitle: "Savings Goals & Wishlists", newGoal: "New Goal",
+                billsTitle: "Recurring Bills & Subscriptions", addBill: "Add Bill",
+                iouTitle: "Debt, Loan & IOU Tracker", addRecord: "Add Record",
+                colorStudio: "Live Custom Color Picker Studio",
+                colorDesc: "Select any UI color token below, then drag on the 2D HSV Color Wheel, adjust RGB/Brightness sliders, or tap a Designer Preset.",
+                brightness: "Brightness / Value", applyColor: "Apply", presetsTitle: "1-Tap Designer Theme Presets",
+                fxTitle: "Multi-Currency Converter", splitTitle: "Split Bill & Tip Calculator",
+                compoundTitle: "Compound Savings Projector", emergTitle: "Emergency Fund Runway",
+                cloudSyncTitle: "Cloud Sync (Optional)", backupTitle: "Backup, Export & Data Reset",
+                navHome: "Home", navAnalytics: "Analytics", navBudgets: "Budgets", navColors: "Colors", navTools: "Tools",
+                newTxTitle: "New Transaction", typeExp: "Expense", typeInc: "Income", typeTrf: "Transfer", saveRecord: "Save Record",
+                descPh: "Description (e.g. Salary, Dinner)", amtPh: "Amount (e.g. 5000+2500)", searchPh: "Search title, #tag, note..."
+            },
+            mm: {
+                appSub: "ကိုယ်ပိုင် စုငွေနှင့် ငွေကြေးစီမံခန့်ခွဲမှု", totalNet: "စုစုပေါင်း လက်ကျန်ငွေ",
+                totalInc: "ဝင်ငွေ စုစုပေါင်း", totalExp: "ထွက်ငွေ စုစုပေါင်း",
+                safeDaily: "တစ်နေ့သုံးနိုင်ငွေ:", savingsRate: "စုဆောင်းနိုင်မှုနှုန်း:", healthScoreLabel: "ငွေကြေးကျန်းမာရေး အမှတ်:",
+                quickAddTitle: "ဝင်ငွေ / ထွက်ငွေ အမြန်မှတ်ရန်", fullForm: "အပြည့်အစုံ",
+                addIncome: "ဝင်ငွေထည့်မည်", addExpense: "ထွက်ငွေထည့်မည်",
+                walletsTitle: "ပိုက်ဆံအိတ်နှင့် အကောင့်များ", newWallet: "အိတ်အသစ်",
+                shortcutsTitle: "တစ်ချက်နှိပ် အမြန်စာရင်းများ", createShortcut: "အသစ်လုပ်မည်",
+                fAll: "အားလုံး", fToday: "ယနေ့", fWeek: "ယခုအပတ်", fMonth: "ယခုလ", fStar: "အရေးကြီး",
+                sortNew: "နောက်ဆုံးစာရင်း", sortOld: "အဟောင်းဆုံး", sortHigh: "ပမာဏအများဆုံး", sortLow: "ပမာဏအနည်းဆုံး",
+                incVsExp: "ဝင်ငွေ နှင့် ထွက်ငွေ နှိုင်းယှဉ်ချက်", catBreakdown: "ကဏ္ဍအလိုက် သုံးစွဲမှု အချိုးအစား",
+                cashflowCurve: "စုငွေတိုးတက်မှု မျဉ်းကွေး", cumulative: "စုစုပေါင်း",
+                heatmapTitle: "လစဉ် ငွေစာရင်းလှုပ်ရှားမှု ပြက္ခဒိန်", smartMetrics: "အသေးစိတ် ငွေကြေးသုံးသပ်ချက်",
+                rule503020: "၅၀ / ၃၀ / ၂၀ စုငွေခွဲဝေမှု တွက်ချက်ချက်", autoCalc: "အလိုအလျောက်",
+                catBudgets: "လစဉ် ကဏ္ဍအလိုက် ဘတ်ဂျက်ကန့်သတ်ချက်", addBudget: "ဘတ်ဂျက်ထည့်မည်",
+                goalsTitle: "စုငွေပန်းတိုင်များ", newGoal: "ပန်းတိုင်အသစ်",
+                billsTitle: "လစဉ်ပေးရမည့် ဘေလ်များ", addBill: "ဘေလ်ထည့်မည်",
+                iouTitle: "အကြွေး ပေးရန် / ရရန် မှတ်တမ်း", addRecord: "မှတ်တမ်းထည့်မည်",
+                colorStudio: "စိတ်ကြိုက် အရောင်ပြောင်းလဲရန် စတူဒီယို",
+                colorDesc: "အောက်ပါ အရောင်ကွက်တစ်ခုကို ရွေးပြီး Color Wheel စက်ဝိုင်းပေါ်တွင် လက်ဖြင့်ရွှေ့၍ စိတ်ကြိုက်အရောင် ပြောင်းနိုင်ပါသည်။",
+                brightness: "အလင်းအမှောင်", applyColor: "အသုံးပြုမည်", presetsTitle: "တစ်ချက်နှိပ် အသင့်သုံး Theme များ",
+                fxTitle: "နိုင်ငံတကာ ငွေလဲနှုန်း တွက်စက်", splitTitle: "ဘေလ်ခွဲရှင်း တွက်စက်",
+                compoundTitle: "နှစ်ရှည် စုငွေတိုးပွားမှု တွက်စက်", emergTitle: "အရေးပေါ်ရန်ပုံငွေ ခံနိုင်ရည်",
+                cloudSyncTitle: "Cloud Sync သိမ်းဆည်းမှု (Optional)", backupTitle: "Backup သိမ်းဆည်းခြင်း နှင့် ဖျက်ခြင်း",
+                navHome: "ပင်မ", navAnalytics: "သုံးသပ်ချက်", navBudgets: "ဘတ်ဂျက်", navColors: "အရောင်များ", navTools: "ကိရိယာများ",
+                newTxTitle: "စာရင်းအသစ် ထည့်သွင်းရန်", typeExp: "ထွက်ငွေ", typeInc: "ဝင်ငွေ", typeTrf: "ငွေလွှဲ", saveRecord: "စာရင်းသိမ်းမည်",
+                descPh: "အကြောင်းအရာ (ဥပမာ - နေ့လယ်စာ)", amtPh: "ပမာဏ (ဥပမာ - 5000+2500)", searchPh: "အမည်၊ #tag ရှာရန်..."
+            }
+        };
+
+        function applyLanguage() {
+            const lang = state.lang;
+            document.getElementById('langBtn').innerText = lang === 'en' ? 'MM' : 'EN';
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const k = el.getAttribute('data-i18n');
+                if (i18n[lang][k]) el.innerText = i18n[lang][k];
+            });
+            document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+                const k = el.getAttribute('data-i18n-ph');
+                if (i18n[lang][k]) el.placeholder = i18n[lang][k];
+            });
+        }
+
+        function toggleLang() {
+            state.lang = state.lang === 'en' ? 'mm' : 'en';
+            saveStore(STORAGE_KEY, state);
+            applyLanguage();
+            renderAll();
+        }
+
+        // --- SAFE MATH EVALUATOR ---
+        function evalMathAmount(str) {
+            const clean = String(str || '').replace(/[^0-9+\-*/().]/g, '');
+            if (!clean) return 0;
+            try {
+                const res = Function('"use strict";return (' + clean + ')')();
+                return (typeof res === 'number' && isFinite(res) && res > 0) ? Math.round(res) : 0;
+            } catch (e) { return 0; }
+        }
+
+        function previewQuickMath() {
+            const raw = document.getElementById('quickAmt').value;
+            const prev = document.getElementById('quickMathPreview');
+            if (/[+\-*/]/.test(raw)) {
+                const val = evalMathAmount(raw);
+                prev.style.display = 'block';
+                prev.innerText = `= ${val.toLocaleString()} Ks`;
+            } else {
+                prev.style.display = 'none';
+            }
+        }
+
+        // --- THEME ENGINE ---
+        function applyThemeColors() {
+            const t = state.theme;
+            const r = document.documentElement.style;
+            r.setProperty('--primary', t.primary);
+            r.setProperty('--secondary', t.secondary);
+            r.setProperty('--income', t.income);
+            r.setProperty('--expense', t.expense);
+            r.setProperty('--bg-app', t.bgApp);
+            r.setProperty('--bg-card', t.bgCard);
+            const isLight = t.bgApp.toLowerCase() === '#f1f5f9' || t.bgApp.toLowerCase() === '#ffffff';
+            r.setProperty('--bg-elevated', isLight ? '#e2e8f0' : '#1a202e');
+            r.setProperty('--text-main', isLight ? '#0f172a' : '#f8fafc');
+            r.setProperty('--text-muted', isLight ? '#475569' : '#94a3b8');
+            r.setProperty('--border', isLight ? '#cbd5e1' : '#232b3e');
+            renderColorTokens();
+        }
+
+        function applyPreset(name) {
+            const presets = {
+                beeGold: { primary: '#eab308', secondary: '#10b981', income: '#10b981', expense: '#ef4444', bgApp: '#090b10', bgCard: '#121620' },
+                neonMint: { primary: '#4ade80', secondary: '#fbbf24', income: '#4ade80', expense: '#f87171', bgApp: '#070a08', bgCard: '#101612' },
+                cyberBlue: { primary: '#38bdf8', secondary: '#a78bfa', income: '#34d399', expense: '#fb7185', bgApp: '#080c14', bgCard: '#111827' },
+                royalPurple: { primary: '#c084fc', secondary: '#f472b6', income: '#34d399', expense: '#f87171', bgApp: '#0d0914', bgCard: '#181124' },
+                roseDark: { primary: '#fb7185', secondary: '#fbbf24', income: '#4ade80', expense: '#f43f5e', bgApp: '#12090d', bgCard: '#1d1016' },
+                cleanLight: { primary: '#d97706', secondary: '#059669', income: '#059669', expense: '#dc2626', bgApp: '#f1f5f9', bgCard: '#ffffff' }
+            };
+            if (presets[name]) {
+                state.theme = { ...presets[name] };
+                saveStore(STORAGE_KEY, state);
+                applyThemeColors();
+                renderAnalytics();
+            }
+        }
+
+        // --- TAB SWITCHING ---
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-' + tab).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('nav-' + tab).classList.add('active');
+            if (tab === 'analytics') renderAnalytics();
+            if (tab === 'budgets') renderBudgetsPage();
+            if (tab === 'colors') initColorWheel();
+            if (tab === 'tools') renderTools();
+        }
+
+        // --- PRIVACY & LOCK ---
+        function togglePrivacy() {
+            document.body.classList.toggle('privacy-blur');
+            document.getElementById('eyeBtn').innerText = document.body.classList.contains('privacy-blur') ? '🙈' : '👁️';
+        }
+
+        function openLockModal() {
+            document.getElementById('vaultPinInput').value = '';
+            document.getElementById('vaultPinError').style.display = 'none';
+            document.getElementById('startupLockBtn').innerText = `Startup Lock: ${state.lockOnStart ? 'ON' : 'OFF'}`;
+            document.getElementById('lockModal').classList.add('open');
+        }
+
+        function verifyVaultPin() {
+            const val = document.getElementById('vaultPinInput').value;
+            if (val === state.pin) {
+                document.getElementById('lockModal').classList.remove('open');
+            } else {
+                document.getElementById('vaultPinError').style.display = 'block';
+                document.getElementById('vaultPinInput').value = '';
+            }
+        }
+
+        function toggleStartupLock() {
+            state.lockOnStart = !state.lockOnStart;
+            saveStore(STORAGE_KEY, state);
+            document.getElementById('startupLockBtn').innerText = `Startup Lock: ${state.lockOnStart ? 'ON' : 'OFF'}`;
+        }
+
+        function changeVaultPin() {
+            const p = prompt("Enter new 4-digit PIN:");
+            if (p && /^\d{4}$/.test(p)) {
+                state.pin = p;
+                saveStore(STORAGE_KEY, state);
+                alert("PIN updated to " + p);
+            } else if (p !== null) {
+                alert("Please enter exactly 4 digits.");
+            }
+        }
+
+        // --- QUICK & FULL TRANSACTIONS ---
+        function quickSubmit(type) {
+            const desc = document.getElementById('quickDesc').value.trim() || (type === 'income' ? 'Quick Income' : 'Quick Expense');
+            const amt = evalMathAmount(document.getElementById('quickAmt').value);
+            if (amt <= 0) {
+                alert(state.lang === 'mm' ? "ငွေပမာဏ မှန်ကန်စွာ ထည့်ပါ" : "Please enter a valid amount");
+                return;
+            }
+            const wallet = selectedWalletFilter === 'ALL' ? state.wallets[0] : selectedWalletFilter;
+            state.transactions.unshift({
+                id: Date.now(),
+                type,
+                amount: amt,
+                title: desc,
+                category: type === 'income' ? 'Salary & Allowance' : 'Food & Dining',
+                wallet,
+                date: new Date().toISOString().slice(0, 10),
+                tags: '',
+                note: '',
+                starred: false
+            });
+            saveStore(STORAGE_KEY, state);
+            document.getElementById('quickDesc').value = '';
+            document.getElementById('quickAmt').value = '';
+            document.getElementById('quickMathPreview').style.display = 'none';
+            renderAll();
+        }
+
+        function openTxModal(type, editId = null) {
+            editingTxId = editId;
+            populateWalletSelects();
+            document.getElementById('modalSegTabs').style.display = editId ? 'none' : 'grid';
+
+            if (editId) {
+                const tx = state.transactions.find(t => t.id === editId);
+                if (!tx) return;
+                setModalType(tx.type);
+                document.getElementById('mAmt').value = tx.amount;
+                document.getElementById('mTitle').value = tx.title;
+                document.getElementById('mCategory').value = tx.category;
+                document.getElementById('mWallet').value = tx.wallet;
+                document.getElementById('mDate').value = tx.date;
+                document.getElementById('mTags').value = tx.tags || '';
+                document.getElementById('mNote').value = tx.note || '';
+                document.getElementById('mStar').checked = !!tx.starred;
+            } else {
+                setModalType(type);
+                document.getElementById('mDate').value = new Date().toISOString().slice(0, 10);
+                document.getElementById('mAmt').value = '';
+                document.getElementById('mTitle').value = '';
+                document.getElementById('mTags').value = '';
+                document.getElementById('mNote').value = '';
+                document.getElementById('mStar').checked = false;
+            }
+            document.getElementById('txModal').classList.add('open');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open');
+        }
+
+        function setModalType(t) {
+            modalTxType = t;
+            document.getElementById('segExp').classList.toggle('active', t === 'expense');
+            document.getElementById('segInc').classList.toggle('active', t === 'income');
+            document.getElementById('segTrf').classList.toggle('active', t === 'transfer');
+            document.getElementById('mCatWalletRow').style.display = t === 'transfer' ? 'none' : 'grid';
+            document.getElementById('mTransferRow').style.display = t === 'transfer' ? 'block' : 'none';
+        }
+
+        function populateWalletSelects() {
+            const opts = state.wallets.map(w => `<option value="${esc(w)}">${esc(w)}</option>`).join('');
+            document.getElementById('mWallet').innerHTML = opts;
+            document.getElementById('mFromWallet').innerHTML = opts;
+            document.getElementById('mToWallet').innerHTML = opts;
+            if (state.wallets.length > 1) document.getElementById('mToWallet').selectedIndex = 1;
+        }
+
+        function saveFullTransaction() {
+            const amt = evalMathAmount(document.getElementById('mAmt').value);
+            if (amt <= 0) {
+                alert("Enter a valid amount!");
+                return;
+            }
+            const date = document.getElementById('mDate').value || new Date().toISOString().slice(0, 10);
+            const tags = document.getElementById('mTags').value.trim();
+            const note = document.getElementById('mNote').value.trim();
+            const starred = document.getElementById('mStar').checked;
+
+            if (editingTxId) {
+                const tx = state.transactions.find(t => t.id === editingTxId);
+                if (tx) {
+                    tx.amount = amt;
+                    tx.title = document.getElementById('mTitle').value.trim() || tx.category;
+                    tx.category = document.getElementById('mCategory').value;
+                    tx.wallet = document.getElementById('mWallet').value;
+                    tx.date = date;
+                    tx.tags = tags;
+                    tx.note = note;
+                    tx.starred = starred;
+                }
+                editingTxId = null;
+            } else if (modalTxType === 'transfer') {
+                const fromW = document.getElementById('mFromWallet').value;
+                const toW = document.getElementById('mToWallet').value;
+                if (fromW === toW) { alert("Select two different wallets"); return; }
+                const title = document.getElementById('mTitle').value.trim() || `Transfer: ${fromW} → ${toW}`;
+                state.transactions.unshift(
+                    { id: Date.now(), type: 'expense', amount: amt, title, category: 'Transfer', wallet: fromW, date, tags, note, starred },
+                    { id: Date.now() + 1, type: 'income', amount: amt, title, category: 'Transfer', wallet: toW, date, tags, note, starred }
+                );
+            } else {
+                const category = document.getElementById('mCategory').value;
+                const wallet = document.getElementById('mWallet').value;
+                const title = document.getElementById('mTitle').value.trim() || category;
+                state.transactions.unshift({
+                    id: Date.now(), type: modalTxType, amount: amt, title, category, wallet, date, tags, note, starred
+                });
+            }
+
+            saveStore(STORAGE_KEY, state);
+            closeModal('txModal');
+            renderAll();
+        }
+
+        function toggleStar(id) {
+            const tx = state.transactions.find(t => t.id === id);
+            if (tx) {
+                tx.starred = !tx.starred;
+                saveStore(STORAGE_KEY, state);
+                renderTransactions();
+            }
+        }
+
+        function deleteTx(id) {
+            if (confirm("Delete this record?")) {
+                state.transactions = state.transactions.filter(t => t.id !== id);
+                saveStore(STORAGE_KEY, state);
+                renderAll();
+            }
+        }
+
+        // --- WALLETS & SHORTCUTS ---
+        function createNewWallet() {
+            const name = prompt(state.lang === 'mm' ? "ပိုက်ဆံအိတ် / ဘဏ်အမည် ရိုက်ထည့်ပါ (ဥပမာ - AYA Pay):" : "New Wallet Name (e.g. AYA Pay):");
+            if (name && name.trim() && !state.wallets.includes(name.trim())) {
+                state.wallets.push(name.trim());
+                saveStore(STORAGE_KEY, state);
+                renderWallets();
+            }
+        }
+
+        function renderWallets() {
+            const strip = document.getElementById('walletStrip');
+            let html = `
+                <div class="wallet-box ${selectedWalletFilter === 'ALL' ? 'active' : ''}" onclick="selectWallet('ALL')">
+                    <div style="font-size: 16px; margin-bottom: 4px;">💼</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">All Wallets</div>
+                    <div style="font-size: 13px; font-weight: 800;">${state.transactions.length} records</div>
+                </div>
+            `;
+
+            state.wallets.forEach(w => {
+                const bal = state.transactions.filter(t => t.wallet === w).reduce((s, t) => s + (t.type === 'income' ? t.amount : -t.amount), 0);
+                html += `
+                    <div class="wallet-box ${selectedWalletFilter === w ? 'active' : ''}" onclick="selectWallet('${esc(w)}')">
+                        <div style="font-size: 16px; margin-bottom: 4px;">💳</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">${esc(w)}</div>
+                        <div class="sensitive" style="font-size: 13px; font-weight: 800; color: var(--primary);">${bal.toLocaleString()} Ks</div>
+                    </div>
+                `;
+            });
+            strip.innerHTML = html;
+        }
+
+        function selectWallet(w) {
+            selectedWalletFilter = w;
+            renderWallets();
+            renderTransactions();
+        }
+
+        function createShortcut() {
+            const title = prompt("Shortcut Title (e.g. Lunch):");
+            if (!title) return;
+            const amt = evalMathAmount(prompt("Amount (Ks):"));
+            if (amt <= 0) return;
+            const isInc = confirm("Click OK for INCOME (+), or Cancel for EXPENSE (-)");
+            state.shortcuts.push({
+                id: Date.now(),
+                title: title.trim(),
+                amount: amt,
+                type: isInc ? 'income' : 'expense',
+                category: isInc ? 'Salary & Allowance' : 'Food & Dining',
+                wallet: state.wallets[0]
+            });
+            saveStore(STORAGE_KEY, state);
+            renderShortcuts();
+        }
+
+        function runShortcut(id) {
+            const s = state.shortcuts.find(x => x.id === id);
+            if (!s) return;
+            state.transactions.unshift({
+                id: Date.now(),
+                type: s.type,
+                amount: s.amount,
+                title: s.title,
+                category: s.category,
+                wallet: s.wallet || state.wallets[0],
+                date: new Date().toISOString().slice(0, 10),
+                tags: '#shortcut',
+                note: '',
+                starred: false
+            });
+            saveStore(STORAGE_KEY, state);
+            renderAll();
+        }
+
+        function deleteShortcut(e, id) {
+            e.stopPropagation();
+            if (confirm("Remove this shortcut?")) {
+                state.shortcuts = state.shortcuts.filter(x => x.id !== id);
+                saveStore(STORAGE_KEY, state);
+                renderShortcuts();
+            }
+        }
+
+        function renderShortcuts() {
+            const strip = document.getElementById('shortcutStrip');
+            if (state.shortcuts.length === 0) {
+                strip.innerHTML = `<div style="font-size: 12px; color: var(--text-muted);">Tap "+ Create Shortcut" to save 1-tap actions.</div>`;
+                return;
+            }
+            strip.innerHTML = state.shortcuts.map(s => `
+                <div class="shortcut-chip" onclick="runShortcut(${s.id})">
+                    <span style="color: ${s.type === 'income' ? 'var(--income)' : 'var(--expense)'};">${s.type === 'income' ? '+' : '-'}</span>
+                    <span>${esc(s.title)}</span>
+                    <span style="color: var(--primary);">${s.amount.toLocaleString()}</span>
+                    <span style="color: var(--text-muted); margin-left: 4px; font-size: 10px;" onclick="deleteShortcut(event, ${s.id})">✖</span>
+                </div>
+            `).join('');
+        }
+
+        // --- RENDER DASHBOARD & TRANSACTIONS ---
+        function setTimeFilter(f, btn) {
+            currentTimeFilter = f;
+            document.querySelectorAll('#timeFilterRow .f-chip').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            renderTransactions();
+        }
+
+        function renderAll() {
+            const inc = state.transactions.filter(t => t.type === 'income' && t.category !== 'Transfer').reduce((s, t) => s + t.amount, 0);
+            const exp = state.transactions.filter(t => t.type === 'expense' && t.category !== 'Transfer').reduce((s, t) => s + t.amount, 0);
+            const net = state.transactions.reduce((s, t) => s + (t.type === 'income' ? t.amount : -t.amount), 0);
+
+            document.getElementById('netBalanceDisplay').innerText = `${net.toLocaleString()} Ks`;
+            document.getElementById('totalIncDisplay').innerText = `+${inc.toLocaleString()} Ks`;
+            document.getElementById('totalExpDisplay').innerText = `-${exp.toLocaleString()} Ks`;
+
+            const now = new Date();
+            const daysLeft = Math.max(1, 30 - now.getDate() + 1);
+            const safeDaily = net > 0 ? Math.round(net / daysLeft) : 0;
+            document.getElementById('safeDailyDisplay').innerText = `${safeDaily.toLocaleString()} Ks/day`;
+
+            const rate = inc > 0 ? Math.max(0, Math.round(((inc - exp) / inc) * 100)) : 0;
+            document.getElementById('savingsRateDisplay').innerText = `${rate}%`;
+
+            const score = inc === 0 ? 50 : Math.min(100, Math.max(10, Math.round(50 + (rate * 0.5))));
+            document.getElementById('healthScoreDisplay').innerText = `${score} / 100`;
+
+            renderWallets();
+            renderShortcuts();
+            renderTransactions();
+        }
+
+        function renderTransactions() {
+            const q = document.getElementById('txSearch').value.trim().toLowerCase();
+            const sort = document.getElementById('txSort').value;
+            const todayStr = new Date().toISOString().slice(0, 10);
+            const monthStr = todayStr.slice(0, 7);
+
+            let list = state.transactions.filter(t => {
+                if (selectedWalletFilter !== 'ALL' && t.wallet !== selectedWalletFilter) return false;
+                if (currentTimeFilter === 'today' && t.date !== todayStr) return false;
+                if (currentTimeFilter === 'month' && !t.date.startsWith(monthStr)) return false;
+                if (currentTimeFilter === 'week') {
+                    const diff = (new Date(todayStr) - new Date(t.date)) / 86400000;
+                    if (diff > 7 || diff < 0) return false;
+                }
+                if (currentTimeFilter === 'star' && !t.starred) return false;
+                if (q) {
+                    const hay = `${t.title} ${t.category} ${t.tags} ${t.note} ${t.wallet}`.toLowerCase();
+                    if (!hay.includes(q)) return false;
+                }
+                return true;
+            });
+
+            if (sort === 'oldest') list = [...list].reverse();
+            else if (sort === 'highest') list = [...list].sort((a, b) => b.amount - a.amount);
+            else if (sort === 'lowest') list = [...list].sort((a, b) => a.amount - b.amount);
+
+            const box = document.getElementById('txList');
+            if (list.length === 0) {
+                box.innerHTML = `<div style="text-align: center; padding: 22px; color: var(--text-muted); font-size: 12px;">No records found</div>`;
+                return;
+            }
+
+            box.innerHTML = list.map(t => `
+                <div class="tx-row">
+                    <div style="flex: 1;">
+                        <div style="font-size: 14px; font-weight: 800;">
+                            ${t.starred ? '⭐ ' : ''}${esc(t.title)}
+                        </div>
+                        <div style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; align-items: center;">
+                            <span class="tx-badge">${esc(t.wallet)}</span>
+                            <span class="tx-badge">${esc(t.category)}</span>
+                            <span style="font-size: 11px; color: var(--text-muted);">${esc(t.date)}</span>
+                            ${t.tags ? `<span style="font-size: 11px; color: var(--primary);">${esc(t.tags)}</span>` : ''}
+                        </div>
+                        ${t.note ? `<div style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">📝 ${esc(t.note)}</div>` : ''}
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="sensitive" style="font-size: 14px; font-weight: 900; color: ${t.type === 'income' ? 'var(--income)' : 'var(--expense)'};">
+                            ${t.type === 'income' ? '+' : '-'}${t.amount.toLocaleString()} Ks
+                        </div>
+                        <div style="margin-top: 5px; display: flex; gap: 4px; justify-content: flex-end;">
+                            <button class="hdr-btn" style="height: 24px; min-width: 24px; font-size: 11px;" onclick="toggleStar(${t.id})">⭐</button>
+                            <button class="hdr-btn" style="height: 24px; min-width: 24px; font-size: 11px;" onclick="openTxModal('${t.type}', ${t.id})">✏️</button>
+                            <button class="hdr-btn" style="height: 24px; min-width: 24px; font-size: 11px; color: var(--expense);" onclick="deleteTx(${t.id})">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- ANALYTICS (LIVE HTML5 CANVAS) ---
+        function renderAnalytics() {
+            const inc = state.transactions.filter(t => t.type === 'income' && t.category !== 'Transfer').reduce((s, t) => s + t.amount, 0);
+            const exp = state.transactions.filter(t => t.type === 'expense' && t.category !== 'Transfer').reduce((s, t) => s + t.amount, 0);
+
+            // 1. Bar Chart
+            const barC = document.getElementById('barCanvas');
+            const bCtx = barC.getContext('2d');
+            bCtx.clearRect(0, 0, barC.width, barC.height);
+            const maxVal = Math.max(inc, exp, 1);
+            const incH = (inc / maxVal) * 120;
+            const expH = (exp / maxVal) * 120;
+
+            bCtx.fillStyle = state.theme.income;
+            bCtx.beginPath();
+            bCtx.roundRect(110, 155 - incH, 85, Math.max(4, incH), 10);
+            bCtx.fill();
+
+            bCtx.fillStyle = state.theme.expense;
+            bCtx.beginPath();
+            bCtx.roundRect(285, 155 - expH, 85, Math.max(4, expH), 10);
+            bCtx.fill();
+
+            bCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-main');
+            bCtx.font = 'bold 13px sans-serif';
+            bCtx.textAlign = 'center';
+            bCtx.fillText(`${inc.toLocaleString()} Ks`, 152, 145 - incH);
+            bCtx.fillText(`${exp.toLocaleString()} Ks`, 327, 145 - expH);
+            bCtx.fillStyle = '#94a3b8';
+            bCtx.fillText('Income', 152, 178);
+            bCtx.fillText('Expense', 327, 178);
+
+            // 2. Donut Chart
+            const dC = document.getElementById('donutCanvas');
+            const dCtx = dC.getContext('2d');
+            dCtx.clearRect(0, 0, 180, 180);
+            const catTotals = {};
+            state.transactions.filter(t => t.type === 'expense' && t.category !== 'Transfer').forEach(t => {
+                catTotals[t.category] = (catTotals[t.category] || 0) + t.amount;
+            });
+            const entries = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
+            const palette = ['#eab308', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6', '#f97316'];
+            const legend = document.getElementById('donutLegend');
+
+            if (entries.length === 0) {
+                dCtx.strokeStyle = '#232b3e';
+                dCtx.lineWidth = 22;
+                dCtx.beginPath();
+                dCtx.arc(90, 90, 62, 0, Math.PI * 2);
+                dCtx.stroke();
+                legend.innerHTML = `<span style="color: var(--text-muted);">Add expenses to view breakdown</span>`;
+            } else {
+                let startAngle = -Math.PI / 2;
+                legend.innerHTML = '';
+                entries.forEach(([cat, amt], idx) => {
+                    const slice = (amt / exp) * Math.PI * 2;
+                    const color = palette[idx % palette.length];
+                    dCtx.strokeStyle = color;
+                    dCtx.lineWidth = 22;
+                    dCtx.beginPath();
+                    dCtx.arc(90, 90, 62, startAngle, startAngle + slice);
+                    dCtx.stroke();
+                    startAngle += slice;
+
+                    const pct = Math.round((amt / exp) * 100);
+                    legend.innerHTML += `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                            <span><span style="color:${color};">●</span> ${esc(cat)}</span>
+                            <strong>${pct}%</strong>
+                        </div>
+                    `;
+                });
+            }
+
+            // 3. Cashflow Curve
+            const lC = document.getElementById('lineCanvas');
+            const lCtx = lC.getContext('2d');
+            lCtx.clearRect(0, 0, lC.width, lC.height);
+            const chron = [...state.transactions].reverse();
+            let running = 0;
+            const pts = chron.length ? chron.map(t => (running += (t.type === 'income' ? t.amount : -t.amount))) : [0, 0];
+            if (pts.length === 1) pts.unshift(0);
+            const minP = Math.min(...pts, 0);
+            const maxP = Math.max(...pts, 1000);
+            const span = Math.max(1, maxP - minP);
+
+            lCtx.strokeStyle = state.theme.primary;
+            lCtx.lineWidth = 3.5;
+            lCtx.beginPath();
+            pts.forEach((val, i) => {
+                const x = 24 + (i / (pts.length - 1)) * (lC.width - 48);
+                const y = 150 - ((val - minP) / span) * 120;
+                if (i === 0) lCtx.moveTo(x, y);
+                else lCtx.lineTo(x, y);
+            });
+            lCtx.stroke();
+
+            // 4. 28-Day Heatmap
+            const heat = document.getElementById('heatmapGrid');
+            const counts = {};
+            state.transactions.forEach(t => {
+                const day = parseInt(t.date.slice(-2), 10);
+                if (day >= 1 && day <= 28) counts[day] = (counts[day] || 0) + 1;
+            });
+            let hHtml = '';
+            for (let d = 1; d <= 28; d++) {
+                const c = counts[d] || 0;
+                const alpha = c === 0 ? 0 : Math.min(0.85, 0.25 + c * 0.2);
+                const bg = c > 0 ? `color-mix(in srgb, var(--primary) ${Math.round(alpha * 100)}%, var(--bg-elevated))` : 'var(--bg-elevated)';
+                const fg = c > 0 ? '#ffffff' : 'var(--text-muted)';
+                hHtml += `<div class="heat-cell" style="background: ${bg}; color: ${fg};">D${d}</div>`;
+            }
+            heat.innerHTML = hHtml;
+
+            // 5. Smart Metrics
+            const topCat = entries.length ? `${entries[0][0]} (${entries[0][1].toLocaleString()} Ks)` : 'N/A';
+            const avgSpend = exp > 0 ? Math.round(exp / Math.max(1, new Date().getDate())) : 0;
+            const netSaved = Math.max(0, inc - exp);
+            document.getElementById('smartMetricsBox').innerHTML = `
+                <div style="display:flex; justify-content:space-between;"><span>Top Spending Category:</span><strong>${esc(topCat)}</strong></div>
+                <div style="display:flex; justify-content:space-between;"><span>Average Daily Spend:</span><strong>${avgSpend.toLocaleString()} Ks/day</strong></div>
+                <div style="display:flex; justify-content:space-between;"><span>Net Accumulated Savings:</span><strong style="color: var(--income);">${netSaved.toLocaleString()} Ks</strong></div>
+            `;
+        }
+
+        // --- BUDGETS, GOALS, BILLS & IOUs ---
+        function renderBudgetsPage() {
+            const inc = state.transactions.filter(t => t.type === 'income' && t.category !== 'Transfer').reduce((s, t) => s + t.amount, 0);
+            document.getElementById('rule503020Box').innerHTML = `
+                <div>• 50% Essential Needs Target: <strong style="color: var(--text-main);">${Math.round(inc * 0.5).toLocaleString()} Ks</strong></div>
+                <div>• 30% Lifestyle & Wants Target: <strong style="color: var(--text-main);">${Math.round(inc * 0.3).toLocaleString()} Ks</strong></div>
+                <div>• 20% Savings & Investments Target: <strong style="color: var(--primary);">${Math.round(inc * 0.2).toLocaleString()} Ks</strong></div>
+            `;
+
+            // Category Budgets
+            const bBox = document.getElementById('categoryBudgetsList');
+            if (state.budgets.length === 0) {
+                bBox.innerHTML = `<div style="font-size: 12px; color: var(--text-muted);">No category budget limits set yet.</div>`;
+            } else {
+                bBox.innerHTML = state.budgets.map(b => {
+                    const spent = state.transactions.filter(t => t.type === 'expense' && t.category === b.category).reduce((s, t) => s + t.amount, 0);
+                    const pct = Math.min(100, Math.round((spent / b.limit) * 100));
+                    const barCol = pct >= 100 ? 'var(--expense)' : (pct >= 80 ? '#f59e0b' : 'var(--primary)');
+                    return `
+                        <div style="margin-bottom: 10px;">
+                            <div style="display:flex; justify-content:space-between; font-size:12px;">
+                                <strong>${esc(b.category)}</strong>
+                                <span>${spent.toLocaleString()} / ${b.limit.toLocaleString()} Ks (${pct}%) <span style="cursor:pointer; color:var(--expense); margin-left:4px;" onclick="deleteBudget(${b.id})">✖</span></span>
+                            </div>
+                            <div class="prog-track"><div class="prog-fill" style="width:${pct}%; background:${barCol};"></div></div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Savings Goals
+            const gBox = document.getElementById('goalsList');
+            if (state.goals.length === 0) {
+                gBox.innerHTML = `<div style="font-size: 12px; color: var(--text-muted);">No savings goals created yet.</div>`;
+            } else {
+                gBox.innerHTML = state.goals.map(g => {
+                    const pct = Math.min(100, Math.round((g.saved / g.target) * 100));
+                    return `
+                        <div class="tx-row" style="flex-direction: column; align-items: stretch;">
+                            <div style="display:flex; justify-content:space-between; font-size:13px;">
+                                <strong>${pct >= 100 ? '🎉' : '🎯'} ${esc(g.title)}</strong>
+                                <span style="color: var(--primary); font-weight: 800;">${pct}%</span>
+                            </div>
+                            <div class="prog-track"><div class="prog-fill" style="width:${pct}%;"></div></div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; gap: 6px;">
+                                <span style="color: var(--text-muted);">${g.saved.toLocaleString()} / ${g.target.toLocaleString()} Ks</span>
+                                <div style="display: flex; gap: 5px;">
+                                    <button class="pill-tag" onclick="depositGoal(${g.id})">+ Deposit</button>
+                                    <button class="pill-tag" style="color: var(--expense); border-color: var(--expense);" onclick="deleteGoal(${g.id})">🗑️</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Recurring Bills
+            const billBox = document.getElementById('billsList');
+            billBox.innerHTML = state.bills.length === 0
+                ? `<div style="font-size: 12px; color: var(--text-muted);">No recurring bills added yet.</div>`
+                : state.bills.map(b => `
+                    <div class="tx-row">
+                        <div>
+                            <div style="font-size: 13px; font-weight: 800;">${esc(b.title)}</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">${b.amount.toLocaleString()} Ks / month</div>
+                        </div>
+                        <div style="display: flex; gap: 6px;">
+                            <button class="pill-tag" onclick="payBill(${b.id})">✅ Pay Now</button>
+                            <button class="pill-tag" style="color: var(--expense);" onclick="deleteBill(${b.id})">✖</button>
+                        </div>
+                    </div>
+                `).join('');
+
+            // Debt & IOU
+            const iouBox = document.getElementById('iouList');
+            iouBox.innerHTML = state.ious.length === 0
+                ? `<div style="font-size: 12px; color: var(--text-muted);">No active debt or loan records.</div>`
+                : state.ious.map(i => `
+                    <div class="tx-row">
+                        <div>
+                            <div style="font-size: 13px; font-weight: 800;">${esc(i.person)} (${i.kind === 'lent' ? 'Lent / ရရန်' : 'Borrowed / ပေးရန်'})</div>
+                            <div style="font-size: 12px; color: ${i.kind === 'lent' ? 'var(--income)' : 'var(--expense)'}; font-weight: 800;">${i.amount.toLocaleString()} Ks</div>
+                        </div>
+                        <button class="pill-tag" onclick="settleIou(${i.id})">Settled</button>
+                    </div>
+                `).join('');
+        }
+
+        function addCategoryBudget() {
+            const cat = prompt("Category Name (e.g. Food & Dining, Transport, Shopping):", "Food & Dining");
+            if (!cat) return;
+            const limit = evalMathAmount(prompt("Monthly Limit (Ks):"));
+            if (limit <= 0) return;
+            state.budgets.push({ id: Date.now(), category: cat.trim(), limit });
+            saveStore(STORAGE_KEY, state);
+            renderBudgetsPage();
+        }
+
+        function deleteBudget(id) {
+            state.budgets = state.budgets.filter(b => b.id !== id);
+            saveStore(STORAGE_KEY, state);
+            renderBudgetsPage();
+        }
+
+        function addSavingsGoal() {
+            const title = prompt("Goal Name (e.g. New Laptop, Emergency Fund):");
+            if (!title) return;
+            const target = evalMathAmount(prompt("Target Amount (Ks):"));
+            if (target <= 0) return;
+            state.goals.push({ id: Date.now(), title: title.trim(), target, saved: 0 });
+            saveStore(STORAGE_KEY, state);
+            renderBudgetsPage();
+        }
+
+        function depositGoal(id) {
+            const g = state.goals.find(x => x.id === id);
+            if (!g) return;
+            const amt = evalMathAmount(prompt(`Add deposit to "${g.title}" (Ks):`));
+            if (amt > 0) {
+                g.saved += amt;
+                saveStore(STORAGE_KEY, state);
+                renderBudgetsPage();
+            }
+        }
+
+        function deleteGoal(id) {
+            if (confirm("Delete this savings goal?")) {
+                state.goals = state.goals.filter(x => x.id !== id);
+                saveStore(STORAGE_KEY, state);
+                renderBudgetsPage();
+            }
+        }
+
+        function addRecurringBill() {
+            const title = prompt("Bill Name (e.g. Fiber Wi-Fi, Phone Bill):");
+            if (!title) return;
+            const amount = evalMathAmount(prompt("Monthly Amount (Ks):"));
+            if (amount <= 0) return;
+            state.bills.push({ id: Date.now(), title: title.trim(), amount });
+            saveStore(STORAGE_KEY, state);
+            renderBudgetsPage();
+        }
+
+        function deleteBill(id) {
+            state.bills = state.bills.filter(x => x.id !== id);
+            saveStore(STORAGE_KEY, state);
+            renderBudgetsPage();
+        }
+
+        function payBill(id) {
+            const b = state.bills.find(x => x.id === id);
+            if (!b) return;
+            state.transactions.unshift({
+                id: Date.now(), type: 'expense', amount: b.amount, title: `Bill: ${b.title}`,
+                category: 'Bills & Internet', wallet: state.wallets[0], date: new Date().toISOString().slice(0, 10),
+                tags: '#bill', note: '', starred: false
+            });
+            saveStore(STORAGE_KEY, state);
+            alert(`Recorded payment of ${b.amount.toLocaleString()} Ks for ${b.title}!`);
+            renderAll();
+        }
+
+        function addIouRecord() {
+            const person = prompt("Person Name:");
+            if (!person) return;
+            const amount = evalMathAmount(prompt("Amount (Ks):"));
+            if (amount <= 0) return;
+            const isLent = confirm("Click OK if YOU LENT money (ရရန်ရှိ), or Cancel if YOU BORROWED (ပေးရန်ရှိ)");
+            state.ious.push({ id: Date.now(), person: person.trim(), amount, kind: isLent ? 'lent' : 'borrowed' });
+            saveStore(STORAGE_KEY, state);
+            renderBudgetsPage();
+        }
+
+        function settleIou(id) {
+            state.ious = state.ious.filter(x => x.id !== id);
+            saveStore(STORAGE_KEY, state);
+            renderBudgetsPage();
+        }
+
+        // --- LIVE 2D HSV COLOR WHEEL STUDIO ---
+        function renderColorTokens() {
+            const tokens = [
+                { key: 'primary', label: 'Primary Accent' },
+                { key: 'secondary', label: 'Secondary Accent' },
+                { key: 'income', label: 'Income Color' },
+                { key: 'expense', label: 'Expense Color' },
+                { key: 'bgApp', label: 'App Background' },
+                { key: 'bgCard', label: 'Card Surface' }
+            ];
+            document.getElementById('tokenGrid').innerHTML = tokens.map(tk => `
+                <button class="token-btn ${activeColorToken === tk.key ? 'active' : ''}" onclick="selectColorToken('${tk.key}')">
+                    <span class="token-swatch" style="background: ${state.theme[tk.key]};"></span>
+                    <div>
+                        <div style="font-size: 12px; font-weight: 800;">${tk.label}</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">${state.theme[tk.key]}</div>
+                    </div>
+                </button>
+            `).join('');
+        }
+
+        function selectColorToken(key) {
+            activeColorToken = key;
+            const hex = state.theme[key];
+            document.getElementById('hexColorInput').value = hex;
+            syncSlidersFromHex(hex);
+            renderColorTokens();
+        }
+
+        function initColorWheel() {
+            const canvas = document.getElementById('colorWheelCanvas');
+            const ctx = canvas.getContext('2d');
+            const cx = 110, cy = 110, radius = 104;
+            const img = ctx.createImageData(220, 220);
+            const v = Number(document.getElementById('valSlider').value) / 100;
+
+            for (let y = 0; y < 220; y++) {
+                for (let x = 0; x < 220; x++) {
+                    const dx = x - cx, dy = y - cy;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const idx = (y * 220 + x) * 4;
+                    if (dist <= radius) {
+                        const hue = (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360;
+                        const sat = dist / radius;
+                        const [r, g, b] = hsvToRgb(hue, sat, v);
+                        img.data[idx] = r;
+                        img.data[idx + 1] = g;
+                        img.data[idx + 2] = b;
+                        img.data[idx + 3] = 255;
+                    }
+                }
+            }
+            ctx.putImageData(img, 0, 0);
+
+            canvas.onpointerdown = (e) => {
+                pickFromWheel(e, canvas);
+                canvas.onpointermove = (ev) => pickFromWheel(ev, canvas);
+            };
+            window.onpointerup = () => { canvas.onpointermove = null; };
+        }
+
+        function pickFromWheel(e, canvas) {
+            const rect = canvas.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 220;
+            const y = ((e.clientY - rect.top) / rect.height) * 220;
+            const dx = x - 110, dy = y - 110;
+            const dist = Math.min(104, Math.sqrt(dx * dx + dy * dy));
+            const hue = (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360;
+            const sat = dist / 104;
+            const v = Number(document.getElementById('valSlider').value) / 100;
+            const [r, g, b] = hsvToRgb(hue, sat, v);
+            updateTokenHex(rgbToHex(r, g, b));
+        }
+
+        function onBrightnessChange() {
+            document.getElementById('valPctLabel').innerText = document.getElementById('valSlider').value + '%';
+            initColorWheel();
+        }
+
+        function onRgbSlider() {
+            const r = Number(document.getElementById('rSlider').value);
+            const g = Number(document.getElementById('gSlider').value);
+            const b = Number(document.getElementById('bSlider').value);
+            document.getElementById('rVal').innerText = r;
+            document.getElementById('gVal').innerText = g;
+            document.getElementById('bVal').innerText = b;
+            updateTokenHex(rgbToHex(r, g, b));
+        }
+
+        function onHexInput() {
+            const val = document.getElementById('hexColorInput').value.trim();
+            if (/^#[0-9a-fA-F]{6}$/.test(val)) updateTokenHex(val);
+        }
+
+        function applyManualHex() { onHexInput(); }
+
+        function updateTokenHex(hex) {
+            state.theme[activeColorToken] = hex;
+            document.getElementById('hexColorInput').value = hex;
+            syncSlidersFromHex(hex);
+            saveStore(STORAGE_KEY, state);
+            applyThemeColors();
+        }
+
+        function syncSlidersFromHex(hex) {
+            const n = parseInt(hex.slice(1), 16);
+            if (isNaN(n)) return;
+            const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+            document.getElementById('rSlider').value = r;
+            document.getElementById('gSlider').value = g;
+            document.getElementById('bSlider').value = b;
+            document.getElementById('rVal').innerText = r;
+            document.getElementById('gVal').innerText = g;
+            document.getElementById('bVal').innerText = b;
+        }
+
+        function hsvToRgb(h, s, v) {
+            const c = v * s;
+            const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+            const m = v - c;
+            let r = 0, g = 0, b = 0;
+            if (h < 60) [r, g, b] = [c, x, 0];
+            else if (h < 120) [r, g, b] = [x, c, 0];
+            else if (h < 180) [r, g, b] = [0, c, x];
+            else if (h < 240) [r, g, b] = [0, x, c];
+            else if (h < 300) [r, g, b] = [x, 0, c];
+            else [r, g, b] = [c, 0, x];
+            return [Math.round((r + m) * 255), Math.round((g + m) * 255), Math.round((b + m) * 255)];
+        }
+
+        function rgbToHex(r, g, b) {
+            return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+        }
+
+        // --- TOOLS & CALCULATORS ---
+        function renderTools() {
+            calcFx();
+            const net = state.transactions.reduce((s, t) => s + (t.type === 'income' ? t.amount : -t.amount), 0);
+            const exp = state.transactions.filter(t => t.type === 'expense' && t.category !== 'Transfer').reduce((s, t) => s + t.amount, 0);
+            const months = exp > 0 ? (net / exp).toFixed(1) : '∞';
+            document.getElementById('emergResult').innerText = `Current Net Balance (${net.toLocaleString()} Ks) covers ~${months} months of expenses.`;
+            document.getElementById('cloudBinInput').value = state.cloud?.binId || '';
+            document.getElementById('cloudKeyInput').value = state.cloud?.apiKey || '';
+        }
+
+        function calcFx() {
+            const amt = Number(document.getElementById('fxAmount').value) || 0;
+            const from = document.getElementById('fxFrom').value;
+            const to = document.getElementById('fxTo').value;
+            const inMMK = amt * (state.ratesToMMK[from] || 1);
+            const out = inMMK / (state.ratesToMMK[to] || 1);
+            document.getElementById('fxResult').innerText = `${amt.toLocaleString()} ${from} = ${out.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${to}`;
+        }
+
+        function editFxRate() {
+            const cur = document.getElementById('fxFrom').value;
+            if (cur === 'MMK') { alert("Select a foreign currency in the first dropdown to edit its MMK rate."); return; }
+            const newRate = Number(prompt(`Enter 1 ${cur} rate in MMK (Current: ${state.ratesToMMK[cur]}):`, state.ratesToMMK[cur]));
+            if (newRate > 0) {
+                state.ratesToMMK[cur] = newRate;
+                saveStore(STORAGE_KEY, state);
+                calcFx();
+            }
+        }
+
+        function calcSplit() {
+            const total = Number(document.getElementById('splitTotal').value) || 0;
+            const ppl = Math.max(1, Number(document.getElementById('splitPeople').value) || 1);
+            const tip = Number(document.getElementById('splitTip').value) || 0;
+            const each = Math.round((total * (1 + tip / 100)) / ppl);
+            document.getElementById('splitResult').innerText = `Each Person Pays: ${each.toLocaleString()} Ks`;
+        }
+
+        function calcCompound() {
+            const pmt = Number(document.getElementById('compMonthly').value) || 0;
+            const yrs = Number(document.getElementById('compYears').value) || 0;
+            const rate = (Number(document.getElementById('compRate').value) || 0) / 100 / 12;
+            if (pmt <= 0 || yrs <= 0) return;
+            const n = yrs * 12;
+            const fv = rate > 0 ? pmt * ((Math.pow(1 + rate, n) - 1) / rate) : pmt * n;
+            document.getElementById('compoundResult').innerText = `Projected in ${yrs} yrs: ${Math.round(fv).toLocaleString()} Ks`;
+        }
+
+        // --- CLOUD SYNC (OPTIONAL JSONBIN) ---
+        async function cloudPush() {
+            const binId = document.getElementById('cloudBinInput').value.trim();
+            const apiKey = document.getElementById('cloudKeyInput').value.trim();
+            if (!binId || !apiKey) { alert("Enter JSONBin Bin ID and Master Key first."); return; }
+            state.cloud = { binId, apiKey };
+            saveStore(STORAGE_KEY, state);
+            document.getElementById('cloudSyncBadge').innerText = 'Uploading...';
+            try {
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': apiKey },
+                    body: JSON.stringify(state)
+                });
+                if (!res.ok) throw new Error();
+                document.getElementById('cloudSyncBadge').innerText = 'Synced ✓';
+                alert("Uploaded to Cloud successfully!");
+            } catch (e) {
+                document.getElementById('cloudSyncBadge').innerText = 'Sync Error';
+                alert("Cloud upload failed. Check Bin ID / API Key.");
+            }
+        }
+
+        async function cloudPull() {
+            const binId = document.getElementById('cloudBinInput').value.trim();
+            const apiKey = document.getElementById('cloudKeyInput').value.trim();
+            if (!binId || !apiKey) { alert("Enter JSONBin Bin ID and Master Key first."); return; }
+            state.cloud = { binId, apiKey };
+            document.getElementById('cloudSyncBadge').innerText = 'Downloading...';
+            try {
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+                    headers: { 'X-Master-Key': apiKey }
+                });
+                const json = await res.json();
+                if (json.record && Array.isArray(json.record.transactions)) {
+                    state = { ...state, ...json.record, cloud: { binId, apiKey } };
+                    saveStore(STORAGE_KEY, state);
+                    applyThemeColors();
+                    applyLanguage();
+                    renderAll();
+                    document.getElementById('cloudSyncBadge').innerText = 'Restored ✓';
+                    alert("Restored data from Cloud successfully!");
+                } else throw new Error();
+            } catch (e) {
+                document.getElementById('cloudSyncBadge').innerText = 'Sync Error';
+                alert("Cloud restore failed. Check Bin ID / API Key.");
+            }
+        }
+
+        // --- QUICK CALCULATOR MODAL ---
+        let popCalcStr = '';
+        function openCalcModal() { document.getElementById('calcModal').classList.add('open'); }
+        function popCalcKey(k) {
+            if (k === 'C') popCalcStr = '';
+            else if (k === 'DEL') popCalcStr = popCalcStr.slice(0, -1);
+            else if (k === '=') {
+                const v = evalMathAmount(popCalcStr);
+                popCalcStr = v ? String(v) : '';
+            } else popCalcStr += k;
+            document.getElementById('popCalcExpr').innerText = popCalcStr || '0';
+            document.getElementById('popCalcDisp').innerText = evalMathAmount(popCalcStr).toLocaleString();
+        }
+        function useCalcInQuick() {
+            const v = evalMathAmount(popCalcStr);
+            if (v > 0) document.getElementById('quickAmt').value = v;
+            closeModal('calcModal');
+            switchTab('home');
+        }
+
+        // --- EXPORT / IMPORT / RESET ---
+        function exportCSV() {
+            const rows = [['Date', 'Type', 'Title', 'Category', 'Wallet', 'Amount', 'Tags', 'Note']];
+            state.transactions.forEach(t => rows.push([t.date, t.type, `"${t.title}"`, `"${t.category}"`, `"${t.wallet}"`, t.amount, `"${t.tags}"`, `"${t.note || ''}"`]));
+            const blob = new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `BEE_Vault_${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+        }
+
+        function exportJSON() {
+            const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `BEE_Vault_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+        }
+
+        function importJSON(e) {
+            const f = e.target.files[0];
+            if (!f) return;
+            const r = new FileReader();
+            r.onload = (ev) => {
+                try {
+                    const parsed = JSON.parse(ev.target.result);
+                    if (parsed && Array.isArray(parsed.transactions)) {
+                        state = { ...state, ...parsed };
+                        saveStore(STORAGE_KEY, state);
+                        applyThemeColors();
+                        applyLanguage();
+                        renderAll();
+                        alert("Backup restored successfully!");
+                    }
+                } catch (err) { alert("Invalid JSON file."); }
+            };
+            r.readAsText(f);
+        }
+
+        function loadSampleData() {
+            const today = new Date().toISOString().slice(0, 10);
+            state.transactions = [
+                { id: 101, type: 'income', amount: 150000, title: 'Monthly Savings Deposit', category: 'Salary & Allowance', wallet: 'KBZPay', date: today, tags: '#savings', note: '', starred: true },
+                { id: 102, type: 'expense', amount: 4500, title: 'Lunch & Drink', category: 'Food & Dining', wallet: 'Cash Wallet', date: today, tags: '#food', note: '', starred: false },
+                { id: 103, type: 'expense', amount: 8000, title: 'Mobile Data Package', category: 'Bills & Internet', wallet: 'WavePay', date: today, tags: '#internet', note: '', starred: false }
+            ];
+            saveStore(STORAGE_KEY, state);
+            renderAll();
+            alert("Sample records loaded!");
+        }
+
+        function clearAllZero() {
+            if (confirm("Clear all records and reset balances to 0?")) {
+                state.transactions = [];
+                state.budgets = [];
+                state.goals = [];
+                state.bills = [];
+                state.ious = [];
+                saveStore(STORAGE_KEY, state);
+                renderAll();
+                alert("All records cleared to 0!");
+            }
+        }
+
+        // --- BOOT ---
+        applyThemeColors();
+        applyLanguage();
+        renderAll();
+        if (state.lockOnStart) openLockModal();
+    </script>
+</body>
+</html>
